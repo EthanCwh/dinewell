@@ -1,0 +1,95 @@
+{% extends "user_layout.html" %}
+
+{% block content %}
+
+<div class="content-section">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-botton mb-4">New Review</legend>
+            <div class="form-group">
+                {{form.title.label(class='form-control-label')}}
+                {% if form.title.errors %}
+                {{form.title(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.title.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.title(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.menu_options.label(class='form-control-label')}}
+                {% if form.menu_options.errors %}
+                {{form.menu_options(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.menu_options.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.menu_options(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.content_menu.label(class='form-control-label')}}
+                {% if form.content_menu.errors %}
+                {{form.content_menu(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.content_menu.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.content_menu(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.staff_options.label(class='form-control-label')}}
+                {% if form.staff_options.errors %}
+                {{form.staff_options(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.staff_options.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.staff_options(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.content_staff.label(class='form-control-label')}}
+                {% if form.content_staff.errors %}
+                {{form.content_staff(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.content_staff.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.content_staff(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.content_additional.label(class='form-control-label')}}
+                {% if form.content_additional.errors %}
+                {{form.content_additional(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.content_additional.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.content_additional(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{form.submit(class='btn btn-outline-info')}}
+        </div>
+    </form>
+    </div>
+
+{% endblock %}
