@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="content-section">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-botton mb-4">Search for Restaurant</legend>
+            <div class="form-group">
+                {{form.RestaurantName.label(class='form-control-label')}}
+                {% if form.RestaurantName.errors %}
+                {{form.RestaurantName(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.RestaurantName.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.RestaurantName(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{form.submit(class='btn btn-outline-info')}}
+        </div>
+    </form>
+    </div>
+
+{% endblock %}

@@ -6,7 +6,20 @@
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
-            <legend class="border-botton mb-4">New Review</legend>
+            <legend class="border-botton mb-4">{{ legend }}</legend>
+            <div class="form-group">
+                {{form.restaurant.label(class='form-control-label')}}
+                {% if form.restaurant.errors %}
+                {{form.restaurant(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.restaurant.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.restaurant(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
             <div class="form-group">
                 {{form.title.label(class='form-control-label')}}
                 {% if form.title.errors %}
@@ -83,6 +96,19 @@
                 </div>
                 {%else%}
                 {{form.content_additional(class="form-control form-control-lg")}}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{form.rating.label(class='form-control-label')}}
+                {% if form.rating.errors %}
+                {{form.rating(class="form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                {% for error in form.rating.errors%}
+                    <span>{{error}}</span>
+                {%endfor%}
+                </div>
+                {%else%}
+                {{form.rating(class="form-control form-control-lg")}}
                 {% endif %}
             </div>
         </fieldset>

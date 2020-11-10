@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm, Form
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, ValidationError, SelectField
 from wtforms.validators import Length, DataRequired, Email, EqualTo
 from dinewell.models import User, Post, Restaurant, Menu, Staff
 from wtforms_sqlalchemy.fields import QuerySelectField
@@ -30,12 +30,23 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class RestaurantRegistration(FlaskForm):
-    RestaurantName = StringField('Restaurant Name', validators=[DataRequired(), Length(min=2, max=20)])
+    RestaurantName = StringField('Restaurant Name', validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators= [DataRequired(), Email()])
     location = StringField('Location', validators = [DataRequired()])
+    address = StringField('Address (optional)')
     password = PasswordField('Password', validators = [DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Sign Up')
+
+    def validate_restaurantname(self, RestaurantName):
+        restaurant = Restaurant.query.filter_by(RestaurantName=RestaurantName.data).first()
+        if restaurant:
+            raise ValidationError('Restaurant name already taken')
+
+    def validate_email(self, email):
+        email = Restaurant.query.filter_by(email=email.data).first()
+        if email:
+            raise ValidationError('Email already taken')
 
 class RestaurantLogin(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -52,6 +63,10 @@ class StaffForm(FlaskForm):
     picture = FileField('Picture of Staff', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Add')
 
+def choice_query_restaurant():
+    r_id = session["rid"]
+    return Restaurant.query.filter_by(id=r_id)
+
 def choice_query_menu():
     r_id = session["rid"]
     return Menu.query.filter_by(owner_id=r_id)
@@ -62,12 +77,14 @@ def choice_query_staff():
     return Staff.query.filter_by(owner_id=r_id)
 
 class ReviewForm(FlaskForm):
+    restaurant = QuerySelectField('Restaurant:', query_factory=choice_query_restaurant, allow_blank=False, get_label='RestaurantName')
     title = StringField('Title', validators=[DataRequired()])
     menu_options = QuerySelectField('What did you eat/drink?', query_factory=choice_query_menu, allow_blank=False, get_label='name')
     content_menu = TextAreaField('Comments about food/drink', validators=[DataRequired()])
     staff_options = QuerySelectField('Who served you?', query_factory=choice_query_staff, allow_blank=False, get_label='name')
     content_staff = TextAreaField('Comments about staff', validators=[DataRequired()])
     content_additional = TextAreaField('Additional comments', validators=[DataRequired()])
+    rating = SelectField('Rating', choices=[(5), (4), (3), (2), (1)])
     submit = SubmitField('Submit')
 
 def choice_query_restaurant():
@@ -76,4 +93,8 @@ def choice_query_restaurant():
 class Review(FlaskForm):
     restaurant_options = QuerySelectField('Which restaurant did you go to?', query_factory=choice_query_restaurant, allow_blank=False, get_label='RestaurantName')
     submit = SubmitField('Confirm')
+
+class LocationForm(FlaskForm):
+    RestaurantName = StringField('Restaurant Name', validators=[DataRequired()])
+    submit = SubmitField('Search')
     

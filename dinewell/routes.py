@@ -1,29 +1,29 @@
 import os
 import secrets
 from PIL import Image
-from flask import escape, request, render_template, url_for, flash, redirect, session
-from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, MenuForm, StaffForm, ReviewForm, Review
+from flask import escape, request, render_template, url_for, flash, redirect, session, abort
+from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, MenuForm, StaffForm, ReviewForm, Review, LocationForm
 from dinewell import app, db, bcrypt
 from dinewell.models import User, Post, Restaurant, Menu, Staff
 from flask_login import login_user, current_user, logout_user, login_required
-    
+from geopy.geocoders import Nominatim
 
-@app.route('/about')
-def about():
-    return render_template("about.html")
 
 @app.route('/')
 @app.route('/home')
 def home():
-    return render_template("home.html", Title='Home')
+    posts = Post.query.all()
+    return render_template("home.html", Title='Home', reviews=posts)
 
 @app.route('/userhome')
 def user_home():
-    return render_template("user_home.html", Title='User Home')
+    posts = Post.query.all()
+    return render_template("user_home.html", Title='User Home', reviews=posts)
 
 @app.route('/restauranthome')
 def restaurant_home():
-    return render_template("restaurant_home.html", Title='Restaurant Home')
+    posts = Post.query.all()
+    return render_template("restaurant_home.html", Title='Restaurant Home', reviews=posts)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -62,7 +62,7 @@ def RRegistration():
     form = RestaurantRegistration()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        restaurant_user = Restaurant(email=form.email.data,  RestaurantName=form.RestaurantName.data, location=form.location.data, password=hashed_password)
+        restaurant_user = Restaurant(email=form.email.data,  RestaurantName=form.RestaurantName.data, location=form.location.data,  address=form.address.data, password=hashed_password)
         db.session.add(restaurant_user)
         db.session.commit()
         flash(f'Your restaurant account has been created', "success")
@@ -81,7 +81,7 @@ def Rlogin():
             return redirect (url_for('restaurant_home'))
         else:
             flash (f'wrong email & password!', "danger")
-    return render_template("restaurantlogin.html", Title='Login', form=form )
+    return render_template("restaurantlogin.html", Title='Login', form=form)
         
 @app.route('/logout')
 def logout():
@@ -103,7 +103,7 @@ def add_menu():
         menu = Menu(name=form.name.data, owner_id=current_user.id)
         db.session.add(menu)
         db.session.commit()
-        flash('Uploaded succesfully!', 'success')
+        flash('Added succesfully!', 'success')
     return render_template('restaurant_menu.html', title='Add Menu', form=form)
 
 def save_staff_picture(form_picture):
@@ -126,7 +126,7 @@ def add_staff():
         staff = Staff(name=form.name.data, owner_id=current_user.id)
         db.session.add(staff)
         db.session.commit()
-        flash('Uploaded succesfully!', 'success')
+        flash('Added succesfully!', 'success')
         if form.picture.data:
             picture_file = save_staff_picture(form.picture.data)
     return render_template('restaurant_staff.html', title='Add Staff', form=form)
@@ -148,8 +148,66 @@ def new_review():
     form = ReviewForm()
     r_id = session["rid"]
     if form.validate_on_submit():
-        review = Post(title=form.title.data, menu_options=form.menu_options.data.name, content_menu=form.content_menu.data, staff_options=form.staff_options.data.name, content_staff=form.content_staff.data, content_additional=form.content_additional.data, user_id=current_user.id)
+        review = Post(RestaurantName=form.restaurant.data.RestaurantName, title=form.title.data, menu_options=form.menu_options.data.name, content_menu=form.content_menu.data, staff_options=form.staff_options.data.name, content_staff=form.content_staff.data, content_additional=form.content_additional.data, rating=form.rating.data, user_id=current_user.id)
         db.session.add(review)
         db.session.commit()
         flash('Submitted succesfully!', 'success')
-    return render_template('new_review.html', title='New Review', form=form)
+        return redirect(url_for('user_home'))
+    return render_template('new_review.html', title='New Review', form=form, legend='New Review')
+
+@app.route("/review/<int:review_id>")
+def review_id(review_id):
+    review= Post.query.get_or_404(review_id)
+    return render_template('review_id.html', title=review.title, review=review)
+
+@app.route("/review/<int:review_id>/edit", methods=['GET', 'POST'])
+@login_required
+def edit_review(review_id):
+    review= Post.query.get_or_404(review_id)
+    if review.author != current_user:
+        abort(403)
+    form = ReviewForm()
+    if form.validate_on_submit():
+        review.title = form.title.data
+        review.menu_options = form.menu_options.data.name
+        review.content_menu = form.content_menu.data
+        review.staff_options = form.staff_options.data.name
+        review.content_staff = form.content_staff.data
+        review.content_additional = form.content_additional.data
+        review.rating = form.rating.data
+        db.session.commit()
+        flash('Your review has been updated', 'success')
+        return redirect(url_for('review_id', review_id=review.id))
+    elif request.method == 'GET':
+        form.title.data = review.title
+        form.menu_options.data = review.menu_options
+        form.content_menu.data = review.content_menu
+        form.staff_options.data = review.staff_options
+        form.content_staff.data = review.content_staff
+        form.content_additional.data = review.content_additional
+        form.rating.data = review.rating
+    return render_template('new_review.html', title='Edit Review', form=form, legend='Edit Review')
+
+@app.route("/review/<int:review_id>/delete", methods=['POST'])
+@login_required
+def delete_review(review_id):
+    review= Post.query.get_or_404(review_id)
+    if review.author != current_user:
+        abort(403)
+    db.session.delete(review)
+    db.session.commit()
+    flash('Your review has been deleted', 'success')
+    return redirect(url_for('user_home'))
+
+@app.route("/mapsearch", methods=['GET', 'POST'])
+def map_search():
+    form = LocationForm()
+    if form.validate_on_submit():
+        restaurant_address = Restaurant.query.filter_by(RestaurantName=form.RestaurantName.data).first().address
+        geolocator = Nominatim(user_agent='myuseragent')
+        coordinates = geolocator.geocode(restaurant_address)
+        lat = coordinates.latitude
+        lon = coordinates.longitude
+        return render_template('map.html', lat=lat, lon=lon)
+    return render_template('map_search.html', title='Search Restaurant', form=form)
+

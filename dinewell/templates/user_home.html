@@ -1,15 +1,26 @@
 {% extends "user_layout.html" %}
 
 {% block content %}
-{% for post in posts %}
+{% for review in reviews %}
 <article class="media content-section">
     <div class="media-body">
       <div class="article-metadata">
-        <a class="mr-2" href="#">{{ post.author }}</a>
-        <small class="text-muted">{{ post.date_posted }}</small>
+        <h4><a class="article-title" href="{{ url_for('review_id', review_id=review.id) }}">{{ review.title }}</a></h4>
+        <p></p>
+        <h5><a class="article-title" href="#">Restaurant: {{ review.RestaurantName }}</a></h5>
+        <p></p>
+        <h6><a class="article-title" href="#">Rating: {{ review.rating }}/5</a></h6>
+        <a class="mr-2" href="#">{{ review.author.username }}</a>
+        <small class="text-muted">{{ review.date_posted.strftime('%Y-%m-%d') }}</small>
       </div>
-      <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-      <p class="article-content">{{ post.content }}</p>
+      <p class="article-content">Food/Drink served: {{ review.menu_options }}</p>
+      <h6><a class="article-title" href="#">Comments about Food/Drink: {{ review.content_menu }}</a></h6>
+      <p class="article-content"></p>
+      <p class="article-content">Served by: {{ review.staff_options }}</p>
+      <h6><a class="article-title" href="#">Comments about Staff: {{ review.content_staff }}</a></h6>
+      <p class="article-content"></p>
+      <p class="article-content">Overall impression:</p>
+      <h6><a class="article-title" href="#">{{ review.content_additional }}</a></h6>
     </div>
 </article>
 {% endfor %}
