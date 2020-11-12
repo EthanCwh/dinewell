@@ -24,7 +24,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Email already taken')
 
 class LoginForm(FlaskForm):
-    email = StringField('email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
@@ -53,6 +53,23 @@ class RestaurantLogin(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
+
+class UpdateUserForm(FlaskForm):
+    username = StringField('Username', validators=[Length(min=2, max=20), DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Update')
+
+    def validate_username(self, username):
+        if username.data != current_user.username:
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError('Username already taken')
+
+    def validate_email(self, email):
+        if email.data != current_user.email:
+            email = User.query.filter_by(email=email.data).first()
+            if email:
+                raise ValidationError('Email already taken')
 
 class MenuForm(FlaskForm):
     name = StringField('Food/Drink Name', validators=[DataRequired()])
@@ -97,4 +114,13 @@ class Review(FlaskForm):
 class LocationForm(FlaskForm):
     RestaurantName = StringField('Restaurant Name', validators=[DataRequired()])
     submit = SubmitField('Search')
+
+def choice_query_restaurant():
+    r_id = session["rid"]
+    return Restaurant.query.filter_by(id=r_id)
+
+class CommentForm(FlaskForm):
+    RestaurantName = StringField('Restaurant Name', validators=[DataRequired()])
+    comment = TextAreaField('Comment:', validators=[DataRequired()])
+    submit = SubmitField('Submit')
     

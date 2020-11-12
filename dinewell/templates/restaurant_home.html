@@ -5,7 +5,7 @@
 <article class="media content-section">
     <div class="media-body">
       <div class="article-metadata">
-        <h4><a class="article-title" href="{{ url_for('review_id', review_id=review.id) }}">{{ review.title }}</a></h4>
+        <h4><a class="article-title" href="{{ url_for('review_id', review_id=review.id) }}">{{ review.id }}. {{ review.title }}</a></h4>
         <p></p>
         <h5><a class="article-title" href="#">Restaurant: {{ review.RestaurantName }}</a></h5>
         <p></p>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <button id="update">Update the Chart</button>
+    <div class="ct-chart ct-perfect-fourth"></div>
+    <script>
+
+      var myChart;
+      var getData = $.get('/data');
+
+      getData.done(function(results) {
+        console.log(results)
+        var data = {
+            labels: [],
+            series: [
+              results.results
+              ]
+            };
+
+        var options = {
+            width: '800px',
+            height: '400px',
+            low: 0,
+            showArea: true
+            }
+
+        myChart = new Chartist.Line('.ct-chart', data, options);
+
+      });
+
+      function updateChart() {
+        var updatedData = $.get('/data');
+
+      updatedData.done(function(results) {
+
+        var data = {
+          labels: [],
+            series: [
+              results.results
+              ]
+            };
+
+          myChart.update(data);
+
+         });
+       
+    }
+
+    $("#update").on('click', updateChart);
+
+    </script>
+  </body>
+</html>
