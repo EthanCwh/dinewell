@@ -8,6 +8,8 @@
             <h6><a class="article-title" href="#">Rating: {{ review.rating }}/5</a></h6>
             <a class="mr-2" href="#">{{ review.author.username }}</a>
             <small class="text-muted">{{ review.date_posted.strftime('%Y-%m-%d') }}</small>
+            <p></p>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('comment_review', review_id=review.id)}}">Add comment</a>
             {% if review.author == current_user %}
                 <div>
                     <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('edit_review', review_id=review.id) }}">Edit</a>
@@ -15,7 +17,7 @@
                 </div>
             {% endif %}
         </div>
-        <p class="article-content">Foor/Drink served: {{ review.menu_options }}</p>
+        <p class="article-content">Food/Drink served: {{ review.menu_options }}</p>
         <h6><a class="article-title" href="#">Comments about Food/Drink: {{ review.content_menu }}</a></h6>
         <p class="article-content"></p>
         <p class="article-content">Served by: {{ review.staff_options }}</p>
@@ -23,6 +25,15 @@
         <p class="article-content"></p>
         <p class="article-content">Overall impression:</p>
         <h6><a class="article-title" href="#">{{ review.content_additional }}</a></h6>
+        </div>
+    </article>
+    <article class="media content-section">
+        <div class="media-body">
+        <div class="article-metadata">
+            <h5 class="article-title">Comments</h5>
+        </div>
+        <p class="article-content">{{ comment.comment }}</p>
+
         </div>
     </article>
     <!-- Modal -->

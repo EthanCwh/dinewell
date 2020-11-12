@@ -1,18 +1,20 @@
 import os
 import secrets
 from PIL import Image
-from flask import escape, request, render_template, url_for, flash, redirect, session, abort
-from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, MenuForm, StaffForm, ReviewForm, Review, LocationForm
+from flask import escape, request, render_template, url_for, flash, redirect, session, abort, jsonify
+from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, UpdateUserForm, MenuForm, StaffForm, ReviewForm, Review, LocationForm, CommentForm
 from dinewell import app, db, bcrypt
-from dinewell.models import User, Post, Restaurant, Menu, Staff
+from dinewell.models import User, Post, Restaurant, Menu, Staff, Comment
 from flask_login import login_user, current_user, logout_user, login_required
 from geopy.geocoders import Nominatim
-
+from sqlalchemy.sql import func
+import requests
 
 @app.route('/')
 @app.route('/home')
 def home():
     posts = Post.query.all()
+
     return render_template("home.html", Title='Home', reviews=posts)
 
 @app.route('/userhome')
@@ -88,11 +90,31 @@ def logout():
     logout_user()
     return redirect (url_for('home'))
 
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    output_size= (125,125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+    return picture_fn
 
-@app.route('/account')
+@app.route('/account', methods=['GET','POST'])
 @login_required
 def account():
-    return render_template("account.html", Title='Account')
+    form = UpdateUserForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash(f'Your account has been updated!', 'success')
+        return redirect(url_for('account'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+    return render_template("account.html", Title='Account', form=form)
 
 
 @app.route("/menu/add", methods=['GET', 'POST'])
@@ -110,7 +132,7 @@ def save_staff_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/staff_pics', picture_fn)
+    picture_path = os.path.join(app.root_path, 'sstaff_pics', picture_fn)
     output_size = (125, 125)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
@@ -152,13 +174,35 @@ def new_review():
         db.session.add(review)
         db.session.commit()
         flash('Submitted succesfully!', 'success')
+        email = User.query.filter_by(id=current_user.id).first().email
+        requests.post(
+            "https://api.mailgun.net/v3/sandboxa8fff24026c2470aa1685cf71714e0ea.mailgun.org/messages",
+		    auth=("api", app.config.get('MAILGUN_API')),
+		    data={"from": "Mailgun Sandbox <postmaster@sandboxa8fff24026c2470aa1685cf71714e0ea.mailgun.org>",
+			"to": email,
+			"subject": "New review added to DineWell!",
+			"text": "Thank you for adding a review!"})
         return redirect(url_for('user_home'))
     return render_template('new_review.html', title='New Review', form=form, legend='New Review')
 
 @app.route("/review/<int:review_id>")
 def review_id(review_id):
     review= Post.query.get_or_404(review_id)
-    return render_template('review_id.html', title=review.title, review=review)
+    comment=Comment.query.get_or_404(review_id)
+    return render_template('review_id.html', title=review.title, review=review, comment=comment)
+
+@app.route("/review/<int:review_id>/comment", methods=['GET', 'POST'])
+@login_required
+def comment_review(review_id):
+    review= Post.query.get_or_404(review_id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(comment=form.comment.data, owner_id=review_id)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Submitted succesfully!', 'success')
+        return redirect(url_for('review_id', review_id=review.id))
+    return render_template('comment_review.html', form=form)
 
 @app.route("/review/<int:review_id>/edit", methods=['GET', 'POST'])
 @login_required
@@ -203,11 +247,27 @@ def delete_review(review_id):
 def map_search():
     form = LocationForm()
     if form.validate_on_submit():
+        api = app.config.get("HERE_API")
         restaurant_address = Restaurant.query.filter_by(RestaurantName=form.RestaurantName.data).first().address
         geolocator = Nominatim(user_agent='myuseragent')
         coordinates = geolocator.geocode(restaurant_address)
         lat = coordinates.latitude
         lon = coordinates.longitude
-        return render_template('map.html', lat=lat, lon=lon)
+        return render_template('map.html', lat=lat, lon=lon, api=api)
     return render_template('map_search.html', title='Search Restaurant', form=form)
 
+@app.route("/chart")
+def chart():
+    return render_template('chart.html')
+
+
+@app.route("/data")
+def data():
+    values = db.session.query(Post.rating).all()
+    results = [results for results, in values]
+    return jsonify({'results': results}) 
+
+@app.route("/rating_average")
+def rating_average():
+    avg = db.session.query(Post.RestaurantName, db.func.avg(Post.rating).label("average_rating"))
+    return render_template('rating_average.html', avg=avg)
