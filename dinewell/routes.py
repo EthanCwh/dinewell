@@ -2,7 +2,7 @@ import os
 import secrets
 from PIL import Image
 from flask import escape, request, render_template, url_for, flash, redirect, session, abort, jsonify
-from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, UpdateUserForm, MenuForm, StaffForm, ReviewForm, Review, LocationForm, CommentForm
+from dinewell.forms import RegistrationForm, LoginForm, RestaurantRegistration, RestaurantLogin, UpdateUserForm, MenuForm, StaffForm, ReviewForm, Review, LocationForm, CommentForm, RestaurantForm
 from dinewell import app, db, bcrypt
 from dinewell.models import User, Post, Restaurant, Menu, Staff, Comment
 from flask_login import login_user, current_user, logout_user, login_required
@@ -14,7 +14,6 @@ import requests
 @app.route('/home')
 def home():
     posts = Post.query.all()
-
     return render_template("home.html", Title='Home', reviews=posts)
 
 @app.route('/userhome')
@@ -271,3 +270,19 @@ def data():
 def rating_average():
     avg = db.session.query(Post.RestaurantName, db.func.avg(Post.rating).label("average_rating"))
     return render_template('rating_average.html', avg=avg)
+
+
+@app.route("/restaurantnamesearch", methods=['GET', 'POST'])
+def restaurant_name_search():
+    form = RestaurantForm()
+    if form.validate_on_submit():
+        restaurants = Post.query.filter_by(RestaurantName=form.restaurant.data).all()
+        return render_template('query_restaurant.html', form=form, restaurants=restaurants)
+    return render_template('restaurant_search.html', title='Search Restaurant by Name', form=form)
+    
+@app.route("/qrcode")
+def qrcode():
+    qr = os.path.join('static/qr')
+    return render_template('qrcode.html', qr=qr)
+
+

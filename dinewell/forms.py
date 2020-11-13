@@ -124,3 +124,6 @@ class CommentForm(FlaskForm):
     comment = TextAreaField('Comment:', validators=[DataRequired()])
     submit = SubmitField('Submit')
     
+class RestaurantForm(FlaskForm):
+    restaurant = StringField('Restaurant Name', validators=[DataRequired()])
+    submit = SubmitField('Search')

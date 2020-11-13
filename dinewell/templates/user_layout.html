@@ -20,6 +20,8 @@
           <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link" href="{{url_for('user_home')}}">Home</a>
             <a class="nav-item nav-link" href="{{url_for('map_search')}}">Restaurant Map</a>
+            <a class="nav-item nav-link" href="{{url_for('restaurant_name_search')}}">Search Reviews by Restaurant Name</a>
+            <a class="nav-item nav-link" href="{{url_for('qrcode')}}">QR Code</a>
           </div>
           <!-- Navbar Right Side -->
           <div class="navbar-nav">
@@ -69,7 +71,7 @@
       </div>
       <div class="col-md-4">
         <div class="content-section">
-          <h3>Ratings over time</h3>
+          <h3>Review ratings</h3>
             <a href="{{url_for('chart')}}"><button type="button" class="btn btn-danger" >Click to view Chart</button></a> 
             </div>
         </div>

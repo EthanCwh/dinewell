@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <legend class="border-botton mb-4">Scan the QR Code to leave a review!</legend>
+        <img src="{{url_for('static', filename='qr/dinewellqr.jpg')}}">
+        </div>      
+    </div>
+</article>
+{% endblock %}

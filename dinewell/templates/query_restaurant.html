@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% for restaurant in restaurants %}
+<article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <h4><a class="article-title">{{ restaurant.id }}. {{ restaurant.title }}</a></h4>
+        <p></p>
+        <h5><a class="article-title" href="#">Restaurant: {{ restaurant.RestaurantName }}</a></h5>
+        <p></p>
+        <h6><a class="article-title" href="#">Rating: {{ restaurant.rating }}/5</a></h6>
+        <a class="mr-2" href="#">{{ restaurant.author.username }}</a>
+        <small class="text-muted">{{ restaurant.date_posted.strftime('%Y-%m-%d') }}</small>
+      </div>
+      <p class="article-content">Food/Drink served: {{ restaurant.menu_options }}</p>
+      <h6><a class="article-title" href="#">Comments about Food/Drink: {{ restaurant.content_menu }}</a></h6>
+      <p class="article-content"></p>
+      <p class="article-content">Served by: {{ restaurant.staff_options }}</p>
+      <h6><a class="article-title" href="#">Comments about Staff: {{ restaurant.content_staff }}</a></h6>
+      <p class="article-content"></p>
+      <p class="article-content">Overall impression:</p>
+      <h6><a class="article-title" href="#">{{ restaurant.content_additional }}</a></h6>
+    </div>
+</article>
+{% endfor %}
+{% endblock %}

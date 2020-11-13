@@ -6,18 +6,18 @@
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
-            <legend class="border-botton mb-4">Search for Restaurant Location</legend>
+            <legend class="border-botton mb-4">Search for Restaurant by Name</legend>
             <div class="form-group">
-                {{form.RestaurantName.label(class='form-control-label')}}
-                {% if form.RestaurantName.errors %}
-                {{form.RestaurantName(class="form-control form-control-lg is-invalid")}}
+                {{form.restaurant.label(class='form-control-label')}}
+                {% if form.restaurant.errors %}
+                {{form.restaurant(class="form-control form-control-lg is-invalid")}}
                 <div class="invalid-feedback">
-                {% for error in form.RestaurantName.errors%}
+                {% for error in form.restaurant.errors%}
                     <span>{{error}}</span>
                 {%endfor%}
                 </div>
                 {%else%}
-                {{form.RestaurantName(class="form-control form-control-lg")}}
+                {{form.restaurant(class="form-control form-control-lg")}}
                 {% endif %}
             </div>
         </fieldset>
